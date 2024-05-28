@@ -1,0 +1,693 @@
+##Fig.S10a 
+library("ggpubr")
+xa<-read.csv('fig.S10a.csv',header = T,row.names = 1)
+ df1<-reshape2::melt(xa,id.vars="geo_continent")
+ df1<-df1[-c(1:3321),]
+ggbarplot(df1, x = "variable", y = "value", add = c("mean_se"),color = "geo_continent",position = position_dodge(0.6),size=0.5)+theme(axis.text.x = element_text(angle = -30,vjust = 0.4, hjust=0.1)) 		
+
+ 
+ ###Fig.S10b 
+  xa<-read.csv('fig.S10b.csv',header = T,row.names = 1)
+ library(pheatmap);library(dplyr)
+ result <- xa %>% group_by(geo_continent) %>%  
+   summarise(across(1:(ncol(xa)-1), ~mean(., na.rm = F))) 
+ result<-result[,-1]  
+ row.names(result) = c("Africa", "Antarctica", "Asia", "Europe", "North America", "Oceania", "South America") 
+  aa<-read.csv('fig.S10b-2.csv',header = T) 
+ rownames(aa)<-names(result)
+  pheatmap(result,cluster_rows = F,cluster_cols = F,color = colorRampPalette(c('blue','white','red'))(100),annotation_col = aa)		 
+		 
+		 
+		 
+ #Fig.1b
+  xa<-read.csv('fig.1b.csv',header = T,row.names = 1)
+  xa<-na.omit(xa)
+ggline(xa,x="BIOME",y="sum",add = "mean_se", plot_type="b")+theme(axis.text.x = element_text(angle = -90,vjust = 0.4, hjust=0.1)) + scale_y_continuous(breaks = seq(-20, 30, by = 5))		 
+		 
+ #Fig.1c
+  xa<-read.csv('fig.1c.csv',header = T,row.names = 1)
+    xa<-na.omit(xa)
+ library(pheatmap)
+  library(dplyr)
+ result <- xa %>% group_by(BIOME) %>%   
+   summarise(across(1:(ncol(xa)-1), ~mean(., na.rm = T)))   
+ result<-as.data.frame(result[,-1]  )
+  row.names(result) = c("1Tundra","2Desert","3Shrubland","4Naturalwetlands","5Grassland","6.2Tropical/Subtropicalforest","6.4TemperateBroadleafforest","6.6Mixedforest","6.8TemperateConiferousforest","6Borealforest","7Pasture","8Cropland")  
+ aa<-read.csv('fig.S10b-2.csv',header = T)  
+  rownames(aa)<-names(result) 
+ pheatmap(result,cluster_rows = F,cluster_cols = F,color = colorRampPalette(c("navy", "white", "firebrick3"))(100),annotation_col = aa,border=T)		 
+
+ 
+ #Fig.2
+ 
+ 
+library(MASS)
+library(randomForest)
+ library(caret)
+
+xa<-read.csv('fig.2-1.csv',row.names=1)
+xb<-read.csv('fig.2-2.csv',row.names=1)
+xb<-xb[,-c(1:3)]
+########sum######
+xc<-cbind(xa$sum,xb);names(xc)[1]<-"sum"
+xcNA<- na.omit(xc) 
+set.seed(1) 
+ train2 <- sample(2275,2275*0.7)  
+ ctrl <- rfeControl( functions = rfFuncs, method = "cv", number = 10,repeats = 10)
+ 
+ set.seed(123)
+ results <- rfe(xcNA[,-1], 
+ xcNA$sum, 
+ sizes = c(1:39), 
+ rfeControl = ctrl,ntree=1000,number=10, 
+ repeats = 10,metric = "RMSE") #
+ results$optVariables 
+  
+
+########sum_organic######
+xc<-cbind(xa$sum_organic,xb);names(xc)[1]<-"sum_organic"
+xcNA<- na.omit(xc) 
+ set.seed(1) 
+ train2 <- sample(2275,2275*0.7)  
+ctrl <- rfeControl( functions = rfFuncs, method = "cv", 
+number = 10,  
+repeats = 10) 
+  set.seed(123)
+ results <- rfe(xcNA[,-1], 
+ xcNA$sum_organic, 
+ sizes = c(1:39), 
+ rfeControl = ctrl,ntree=1000,number=10, 
+ repeats = 10,metric = "RMSE")  
+ print(results)
+ results$optVariables 
+ results$optsize  
+ 
+########sum_inorganic######
+ xc<-cbind(xa$sum_inorganic,xb);names(xc)[1]<-"sum_inorganic"
+xcNA<- na.omit(xc) 
+ set.seed(1)
+ train2 <- sample(2275,2275*0.7) 
+ ctrl <- rfeControl( functions = rfFuncs, method = "cv", 
+number = 10,  
+repeats = 10) 
+ 
+ set.seed(123)
+ results <- rfe(xcNA[,-1], 
+ xcNA$sum_inorganic, 
+ sizes = c(1:39), 
+ rfeControl = ctrl,ntree=1000,number=10, 
+ repeats = 10,metric = "RMSE")  
+ print(results)
+ results$optVariables 
+ results$optsize  
+ 
+
+###Phosphotransferase###
+
+xc<-cbind(xa$sum_Phosphotransferase,xb);names(xc)[1]<-"sum_Phosphotransferase"
+xcNA<- na.omit(xc) 
+ set.seed(1) 
+ train2 <- sample(2275,2275*0.7)  
+ 
+ 
+ctrl <- rfeControl( functions = rfFuncs, method = "cv", 
+number = 10,  
+repeats = 10) 
+ 
+ set.seed(123)
+ results <- rfe(xcNA[,-1], 
+ xcNA$sum_Phosphotransferase, 
+ sizes = c(1:39), 
+ rfeControl = ctrl,ntree=1000,number=10, 
+ repeats = 10,metric = "RMSE") 
+ print(results)
+results$optVariables
+ results$optsize 
+
+###sum_Transporters###
+
+xc<-cbind(xa$sum_Transporters,xb);names(xc)[1]<-"sum_Transporters"
+xcNA<- na.omit(xc)
+ set.seed(1)
+ train2 <- sample(2275,2275*0.7) 
+ 
+ 
+ctrl <- rfeControl( functions = rfFuncs, method = "cv",
+number = 10, 
+repeats = 10)
+ 
+ set.seed(123)
+ results <- rfe(xcNA[,-1],
+ xcNA$sum_Transporters,
+ sizes = c(1:39),
+ rfeControl = ctrl,ntree=1000,number=10, 
+ repeats = 10,metric = "RMSE") 
+ print(results)
+results$optVariables
+ results$optsize 
+
+
+
+###sum_Two_component###
+
+xc<-cbind(xa$sum_Two_component,xb);names(xc)[1]<-"sum_Two_component"
+xcNA<- na.omit(xc)
+ set.seed(1)
+ train2 <- sample(2275,2275*0.7) 
+ 
+ 
+ctrl <- rfeControl( functions = rfFuncs, method = "cv",
+number = 10, 
+repeats = 10)
+ 
+ set.seed(123)
+ results <- rfe(xcNA[,-1],
+ xcNA$sum_Two_component,
+ sizes = c(1:39),
+ rfeControl = ctrl,ntree=1000,number=10, 
+ repeats = 10,metric = "RMSE") 
+ print(results)
+ results$optVariables
+ results$optsize 
+  
+##ntree&mtry
+ 
+ ###sum_inorganic  
+ cols_remain3<- c("ABS_lat","nitrogen_0.30_mean", "cec_0.30_mean","orgP","prec") 
+xbb <- xb[ ,colnames(xb) %in% cols_remain3]
+xc<-cbind(xa$sum_inorganic,xbb);names(xc)[1]<-"sum_inorganic"
+ xcNA<- na.omit(xc)
+ X <- xcNA[,names(xcNA) != "sum_inorganic"]
+ y <- xcNA$sum_inorganic
+grid <- expand.grid(mtry = seq(1, 5, by = 1))
+###similar as before
+ set.seed(42) 
+ train3 <- createDataPartition(y, p = 0.7, list = FALSE) 
+  X_train <- X[train3,]
+ y_train <- y[train3]
+ X_test <- X[-train3,]
+ y_test <- y[-train3]
+ rfFuncs <- getModelInfo("rf", regex = FALSE)[[1]]
+ results <- list()
+ for (ntree in c(300, 500, 700, 1000, 1300,1600,1900,2200,2500)) {
+  rfFuncs$fit <- function(x, y, lev = NULL, last = TRUE, weights = NULL, ...) {
+ randomForest::randomForest(x, y, ntree = ntree, ...)
+ }
+  rf_grid_search <- train(X_train, y_train, method = rfFuncs, tuneGrid = grid, trControl = trainControl(method = "cv", number = 10, repeats = 10, verboseIter = TRUE))
+ results[[paste0("ntree_", ntree)]] <- rf_grid_search }
+ sink("sum_inorganic_mtry_ntree.csv")
+ a=list(results);a
+sink()
+# write.csv(results[["ntree_100"]]$results, file = "ntree_100_results.csv")
+  library(ggplot2)
+ df <- data.frame(ntree = numeric(), mtry = numeric(), RMSE = numeric())
+ for (name in names(results)) {
+ntree <- as.numeric(gsub("ntree_", "", name))
+res <- results[[name]]$results 
+df <- rbind(df, data.frame(ntree = ntree, mtry = res$mtry, RMSE = res$RMSE))
+}
+ggplot(df, aes(x = mtry, y = RMSE, color = factor(ntree))) +geom_line() +geom_point()+labs(x = "mtry", y = "RMSE", color = "ntree") +theme_minimal()
+ print(results$ntree_1900)  
+
+ 
+######sum_Transporters## 
+ cols_remain3<- c( "ABS_lat","sand_0_30cm_mean","orgP","clay_0_30cm_mean","cfvo_0_30cm_mean","CN30cm_1_2","development_threat_index_2","wc2.1_2.5m_elev_2","Human_influence_index_2","srad","phh2o_0.30_mean","SMC30cm_1_2","labP","bdod_0_30cm_mean","human_modification_terrestrial_2","secP_1_2","population_density_2","anthropogenic_biome_2","silt_0_30cm_mean","GDP_per_capita_PPP2005","totP","cec_0.30_mean","ocd_0_30cm_mean","Potential_evapotranspiration_annual_2","tmin","nfertilizer_global_2","tavg","SMN30cm_1_2","travel_time_to_cities_min","human_footprint_3","nitrogen_0.30_mean","Human_development_index2005","pfertilizer_global_2","soc_0.30_mean","tmax","occP_1_2","Aridity_index_2" ,"prec"   )
+  xc<-cbind(xa$sum_Transporters,xbb);names(xc)[1]<-"sum_Transporters"
+ xcNA<- na.omit(xc)# 
+ X <- xcNA[,names(xcNA) != "sum_Transporters"]
+ y <- xcNA$sum_Transporters
+ grid <- expand.grid(mtry = seq(1, 38, by = 1))
+###similar as before
+..............
+ 
+sink("sum_Transporters_mtry_ntree.csv")
+ a=list(results);a
+sink()
+df <- data.frame(ntree = numeric(), mtry = numeric(), RMSE = numeric())
+ for (name in names(results)) {
+ntree <- as.numeric(gsub("ntree_", "", name))
+res <- results[[name]]$results
+df <- rbind(df, data.frame(ntree = ntree, mtry = res$mtry, RMSE = res$RMSE))
+}
+ggplot(df, aes(x = mtry, y = RMSE, color = factor(ntree))) +geom_line() +geom_point()+labs(x = "mtry", y = "RMSE", color = "ntree") +theme_minimal()
+ 
+ 
+ ###Phosphotransferase###
+cols_remain3<- c( "Aridity_index_2"  ,"secP_1_2" ,  "sand_0_30cm_mean" ,  "bdod_0_30cm_mean",  "ABS_lat","human_modification_terrestrial_2","wc2.1_2.5m_elev_2","SMN30cm_1_2",  "travel_time_to_cities_min","srad",  "SMC30cm_1_2","cec_0.30_mean",  "phh2o_0.30_mean","clay_0_30cm_mean", "Annual_mean_moisture_index_2",  "silt_0_30cm_mean","Potential_evapotranspiration_annual_2",  "ocd_0_30cm_mean","Human_development_index2005",  "nitrogen_0.30_mean","cfvo_0_30cm_mean",  "pfertilizer_global_2","soc_0.30_mean",  "nfertilizer_global_2","tmax",  "prec","labP",  "tavg","GDP_per_capita_PPP2005",  "tmin","CN30cm_1_2",  "human_footprint_3","Human_influence_index_2","orgP","occP_1_2"  ) 
+xbb <- xb[ ,colnames(xb) %in% cols_remain3]
+xc<-cbind(xa$sum_Phosphotransferase,xbb);names(xc)[1]<-"sum_Phosphotransferase"
+ xcNA<- na.omit(xc)# 
+ X <- xcNA[,names(xcNA) != "sum_Phosphotransferase"]
+ y <- xcNA$sum_Phosphotransferase
+
+ grid <- expand.grid(mtry = seq(1, 35, by = 1))
+###similar as before
+.........
+
+
+ ###sum_organic 
+
+cols_remain3<- c("tmax","Aridity_index_2",  "ABS_lat","nitrogen_0.30_mean",  "CN30cm_1_2","human_modification_terrestrial_2",  "ocd_0_30cm_mean","bdod_0_30cm_mean",  "phh2o_0.30_mean","cec_0.30_mean",  "silt_0_30cm_mean","human_footprint_3",  "orgP","Annual_mean_moisture_index_2",  "tavg","totP",  "occP_1_2","sand_0_30cm_mean") 
+
+
+ xbb <- xb[ ,colnames(xb) %in% cols_remain3]
+xc<-cbind(xa$sum_organic,xbb);names(xc)[1]<-"sum_organic"
+ xcNA<- na.omit(xc)# 
+
+ X <- xcNA[,names(xcNA) != "sum_organic"]#
+ y <- xcNA$sum_organic#
+
+ grid <- expand.grid(mtry = seq(1, 18, by = 1))
+###similar as before
+.........
+
+mtry=4,ntree=500
+sink("sum_organic_mtry_ntree.csv")
+ a=list(results);a
+ sink()
+
+ ##map plot---only show total P gene abundance for an example (Fig.2a).For the other P-cycling processes, only change the variables, mtry, and ntree values
+  library(automap)
+ library(ggplot2)
+ library(maps)
+ library(pacman)
+ library(gstat)
+ library(rgdal)
+ p_load(sf,raster,tidyverse)
+ library(randomForest)
+  lon <- seq(-180,180,0.2)
+ lat <- seq(-90,90,0.2)
+ coordinate <- matrix(nrow = length(lon) * length(lat),ncol = 2)
+  z <- 1
+ for (i in 1:length(lat)) {
+for (j in 1:length(lon)) {
+coordinate[z,1] <- lon[j]
+coordinate[z,2] <- lat[i]
+z <- z + 1
+}
+ }
+ z
+ coordinate <- as.data.frame(coordinate)
+colnames(coordinate) <- c("longitude", "latitude")
+ coordinate$ABS_lat <- abs(coordinate$latitude)
+ xa<-read.csv('fig.2-1.csv',row.names=1)
+xb<-read.csv('fig.2-2.csv',row.names=1)
+ cols_remain2<- c( "lon", "lat_weidu", "ABS_lat" ,"sand_0_30cm_mean", "CN30cm_1_2" ,"cfvo_0_30cm_mean", "orgP" , "clay_0_30cm_mean", "srad" ,"bdod_0_30cm_mean" , "Human_influence_index_2", "cec_0.30_mean", "SMN30cm_1_2", "phh2o_0.30_mean", "Potential_evapotranspiration_annual_2", "development_threat_index_2", "silt_0_30cm_mean", "ocd_0_30cm_mean", "SMC30cm_1_2", "wc2.1_2.5m_elev_2", "labP", "population_density_2", "tmin", "GDP_per_capita_PPP2005", "Aridity_index_2", "totP", "nitrogen_0.30_mean")  
+ xbb <- xb[ ,colnames(xb) %in% cols_remain2] 
+xc<-cbind(xa,xbb)
+xaa<- na.omit(xc) 
+   orgP <- raster::extract(raster('/mnt/ufs18/home-160/wangjic1/earth_profile_download/soil_P/orgP_1.tif'), coordinate[,1:2])
+labP <- raster::extract(raster('/mnt/ufs18/home-160/wangjic1/earth_profile_download/soil_P/labP_1.tif'), coordinate[,1:2])
+ totP<- raster::extract(raster('/mnt/ufs18/home-160/wangjic1/earth_profile_download/soil_P/totP_1.tif'), coordinate[,1:2])
+  sand_0_30cm_mean <- rowMeans(data.frame(raster::extract(sand_0_5cm_mean, coordinate[,1:2]),raster::extract(sand_5_15cm_mean, coordinate[,1:2]) ,raster::extract(sand_15_30cm_mean, coordinate[,1:2])))  
+ CN30cm_1_2<-raster::extract(CN30cm_1, coordinate[,1:2])
+  cfvo_0_30cm_mean<- rowMeans(data.frame(raster::extract(cfvo_0_5cm_mean, coordinate[,1:2]),raster::extract(cfvo_5_15cm_mean, coordinate[,1:2]) ,raster::extract(cfvo_15_30cm_mean, coordinate[,1:2]))) 
+  clay_0_30cm_mean<- rowMeans(data.frame(raster::extract(clay_0_5cm_mean, coordinate[,1:2]),raster::extract(clay_5_15cm_mean, coordinate[,1:2]) ,raster::extract(clay_15_30cm_mean, coordinate[,1:2]))) 
+  srad <- rowMeans(raster::extract(wc2.1_2.5m_srad, coordinate[,1:2]) ) 
+ bdod_0_30cm_mean<- rowMeans(data.frame(raster::extract(bdod_0_5cm_mean, coordinate[,1:2]),raster::extract(bdod_5_15cm_mean, coordinate[,1:2]) ,raster::extract(bdod_15_30cm_mean, coordinate[,1:2]))) 
+  Human_influence_index_2 <- raster::extract(Human_influence_index, coordinate[,1:2]) 
+  cec_nitrogen_ph_soc <- raster::extract(cec_nitrogen_ph_soc2, coordinate[,1:2]) 
+ cec_0.30_mean <- rowMeans(cec_nitrogen_ph_soc[,1:3]) 
+ phh2o_0.30_mean <- rowMeans(cec_nitrogen_ph_soc[,7:9]) 
+  SMN30cm_1_2 <- raster::extract(SMN30cm_1_2,coordinate[,1:2])
+  Potential_evapotranspiration_annual_2<-raster::extract(Potential_evapotranspiration_annual,coordinate[,1:2]) 
+  development_threat_index_2<-raster::extract(development_threat_index,coordinate[,1:2])
+  silt_0_30cm_mean<- rowMeans(data.frame(raster::extract(silt_0_5cm_mean, coordinate[,1:2]),raster::extract(silt_5_15cm_mean, coordinate[,1:2]) ,raster::extract(silt_15_30cm_mean, coordinate[,1:2]))) 
+  ocd_0_30cm_mean<- rowMeans(data.frame(raster::extract(ocd_0_5cm_mean, coordinate[,1:2]),raster::extract(ocd_5_15cm_mean, coordinate[,1:2]) ,raster::extract(ocd_15_30cm_mean, coordinate[,1:2]))) 
+  SMC30cm_1_2<- raster::extract(SMC30cm_1_2,coordinate[,1:2])
+  wc2.1_2.5m_elev_2<- raster::extract(wc2.1_2.5m_elev,coordinate[,1:2])
+  population_density_2<- raster::extract(population_density,coordinate[,1:2])
+  tmin <-  rowMeans(raster::extract(wc2.1_2.5m_tmin,coordinate[,1:2])) 
+ GDP_per_capita_PPP2005 <- raster::extract(GDP_per_capita_PPP,coordinate[,1:2])[,26] 
+  Aridity_index_2 <- raster::extract(Aridity_index,coordinate[,1:2])
+  nitrogen_0.30_mean <- rowMeans(cec_nitrogen_ph_soc[,4:6] )   
+    coordinate2<- cbind(coordinate,sand_0_30cm_mean, CN30cm_1_2 ,cfvo_0_30cm_mean, orgP , clay_0_30cm_mean, srad ,bdod_0_30cm_mean , Human_influence_index_2, cec_0.30_mean, SMN30cm_1_2, phh2o_0.30_mean, Potential_evapotranspiration_annual_2, development_threat_index_2, silt_0_30cm_mean, ocd_0_30cm_mean, SMC30cm_1_2, wc2.1_2.5m_elev_2, labP, population_density_2, tmin, GDP_per_capita_PPP2005, Aridity_index_2, totP, nitrogen_0.30_mean)  
+    coordinate2<-na.omit(coordinate2)
+ #write.csv(coordinate2,"coordinate22.csv") 
+  coordinates(xaa) =~ lon+lat_weidu
+   forest.sum <- randomForest(sum ~ ABS_lat+ sand_0_30cm_mean+ CN30cm_1_2 +cfvo_0_30cm_mean+ orgP + clay_0_30cm_mean+ srad +bdod_0_30cm_mean + Human_influence_index_2+ cec_0.30_mean+ SMN30cm_1_2+ phh2o_0.30_mean+ Potential_evapotranspiration_annual_2+ development_threat_index_2+ silt_0_30cm_mean+ ocd_0_30cm_mean+ SMC30cm_1_2+ wc2.1_2.5m_elev_2+ labP+ population_density_2+ tmin+ GDP_per_capita_PPP2005+ Aridity_index_2+ totP+ nitrogen_0.30_mean,data=xaa,mtry=21,ntree=500,importance=TRUE)  
+ prediction <- predict(forest.sum, newdata = coordinate2, predict.all=TRUE)  
+      variance <- apply(prediction$individual, 1, var)   
+     final_prediction <- prediction$aggregate
+   final_prediction <-as.data.frame(final_prediction)
+   variance <-as.data.frame(variance)
+    prediction3<- cbind(coordinate2[,1:2],final_prediction,variance)  
+  head(prediction3)
+     pdf('sum_randomForest_map.pdf') 
+ map_data <- readOGR(dsn = "ne_10m_admin_0_countries", layer = "ne_10m_admin_0_countries") ##
+   ggplot()+geom_tile(data=prediction3,aes(x = longitude,y = latitude, fill = final_prediction))+geom_polygon(data = map_data, aes(x = long, y = lat, group=group),fill=NA,color="gray50")+coord_equal()+scale_fill_gradientn(colours=rev(c("#9E0142", "#D53E4F", "#F46D43" ,"#FDAE61" ,"#FEE08B","#FFFFBF" ,"#E6F598", "#ABDDA4" ,"#66C2A5", "#3288BD","#5E4FA2")),values=scales::rescale(c(0,0.15,0.25,0.35,0.5,1)))+theme_minimal()+theme(axis.title= element_blank())  
+dev.off()
+  # variation--Fig.S7a
+ pdf('sum_randomForest_variance2.pdf')
+ ggplot()+geom_tile(data=prediction3,aes(x = longitude,y = latitude, fill = variance))+geom_polygon(data = map_data, aes(x = long, y = lat, group=group),fill=NA,color="gray50")+coord_equal()+scale_fill_gradientn(colours=rev(c("#9E0142", "#D53E4F", "#F46D43" ,"#FDAE61" ,"#FEE08B","#FFFFBF" ,"#E6F598", "#ABDDA4" ,"#66C2A5", "#3288BD","#5E4FA2")),values=scales::rescale(c(0,0.15,0.25,0.35,0.5,0.6,0.8,1)))+theme_minimal()+theme(axis.title= element_blank())  
+dev.off()
+ 
+ 
+ ##Rotated Principal Component Analysis 
+ cols_remain2<- c( "travel_time_to_cities_min","development_threat_index_2","population_density_2","SMN30cm_1_2","CN30cm_1_2","pfertilizer_global_2","clay_0_30cm_mean","cec_0.30_mean","cfvo_0_30cm_mean","Aridity_index_2","GDP_per_capita_PPP2005","anthropogenic_biome_2","phh2o_0.30_mean","ABS_lat","srad","wc2.1_2.5m_elev_2","ocd_0_30cm_mean","Human_influence_index_2","bdod_0_30cm_mean","nitrogen_0.30_mean","human_footprint_3","human_modification_terrestrial_2","soc_0.30_mean" )  
+ 
+xa<-read.csv('fig.2-1.csv',row.names=1)
+xb<-read.csv('fig.2-2.csv',row.names=1)
+xb<-xb[,-c(1:3)]
+xc<-cbind(xa$sum,xb);names(xc)[1]<-"sum"
+xcNA<- na.omit(xc) 
+ xccNA <- xcNA[ ,colnames(xcNA) %in% cols_remain2] 
+ 
+sdx <- as.matrix(xccNA)
+nc <- ncol(sdx)
+nr <- nrow(sdx)
+rmin <- 1
+rmax <- nc
+sdx <- scale(sdx)
+cx <- cov(sdx) # Covariance Matrix
+ea <- svd(cx, nv=0)
+nopc <- ncol(ea$u)
+sdevalues <- matrix(rep(sqrt(ea$d), nopc), nrow = nopc, ncol=nopc,byrow = TRUE)
+loadings <- ea$u*sdevalues
+scores <- sdx %*% ea$u
+scmx <- matrix(rep(colMeans(scores), nr), nrow = nr, ncol = nc, byrow = TRUE) 
+scsx <- matrix(rep(sd(scores[,]), nr), nrow = nr, ncol = nc, byrow = TRUE) 
+scsdx <- (scores-scmx)/scsx
+scsdx <- scsdx[1:nr,1:nc]
+varex <- ea$d / sum(ea$d) * 100
+pc_or <- as.data.frame(matrix(NA, ncol=4, nrow=rmax))
+colnames(pc_or) <- c("PC","EV","Variance","cumvar")
+for(i in 1:rmax){
+  pc_or[i,1] <- i
+  pc_or[i,2] <- round(ea$d[i],3)
+  pc_or[i,3] <- round(varex[i],3)
+  pc_or[i,4] <- round(sum(varex[seq(1,i)]),3)
+}
+pc_or$EV <- as.numeric(pc_or$EV)  
+vm <- varimax(loadings[,1:7],normalize=TRUE)
+vm$rotmat <- vm$rotmat[,order(colSums(vm$loadings^2), decreasing = TRUE)]
+rloadings <- loadings[,1:7] %*% vm$rotmat
+library(corpcor)
+rcoef <- pseudoinverse(as.matrix(cx)) %*% rloadings
+rscores <- as.matrix(sdx) %*% rcoef
+rscmx <- matrix(rep(colMeans(rscores), nrow(rscores)), nrow = nrow(rscores), 
+                ncol = ncol(rscores), byrow = TRUE) 
+rscsx <- matrix(rep(sd(rscores[,]), nrow(rscores)), nrow = nrow(rscores), 
+                ncol = ncol(rscores), byrow = TRUE) 
+rscsdx <- (rscores-rscmx)/rscsx
+rscores <- rscsdx[1:nrow(rscores),1:7]
+rvalues <- colSums(rloadings^2)
+vmt <- varimax(loadings, normalize=TRUE)
+vmtloadings <- loadings %*% vmt$rotmat
+allrvalues <- colSums(vmtloadings^2)
+rvarex <- rvalues / sum(allrvalues) * 100
+pc_wr <- as.data.frame(matrix(NA, ncol=4, nrow=7))
+colnames(pc_wr) <- c("PC", "Eigenvalue", "Variance", "Cumulative")
+for(i in 1:7){
+  pc_wr[i,1] <- i
+  pc_wr[i,2] <- round(rvalues[i],3)
+  pc_wr[i,3] <- round(rvarex[i], 3)
+  pc_wr[i,4] <- round(sum(rvarex[seq(1,i)]),3)
+}
+library(lessR)
+colnames(rscores) <- to("PC", ncol(rscores),same.size=FALSE)
+colnames(rloadings) <- to("PC", ncol(rloadings),same.size=FALSE)
+row.names(rloadings) <- colnames(xccNA)
+pca_wr.new <- data.frame(t(pc_wr[,-1]))
+colnames(pca_wr.new) <- to("PC", ncol(pca_wr.new),same.size=FALSE)
+pca_wr.new <- do.call(cbind,lapply(pca_wr.new,function(x)as.numeric(as.character(x))))
+pca.allbind <- rbind.data.frame(pca_wr.new, round(rloadings,3))
+row.names(pca.allbind)[1:3] <- c("Eigenvalue", "Variability (%)", "Cumulative (%)")
+
+
+
+ ##SEM##Fig.S8
+ library(lavaan)
+  library(semPlot)
+  xxy<-read.csv('fig.S8.csv',row.names = 1)
+
+   mod<-'
+   sum~ PC1 +PC2+PC4	+PC5+PC6+	PC7	+PC3
+  sum_organic~ PC1 +PC2+PC4	+PC5+PC6+	PC7+	PC3
+  sum_inorganic~ PC1 +PC2+PC4	+PC5+PC6+	PC7+PC3	
+  sum_Phosphotransferase~ PC1 +PC2+PC4	+PC5+PC6+	PC7+PC3	
+  sum_Transporters~ PC1 +PC2    +PC4	+PC5 +PC6+	PC7+PC3	                                       
+  sum_Two_component~ PC1 +PC2+PC4	+PC5+PC6+	PC7+	PC3
+   labP~ PC1 +PC2+PC4	+PC5+PC6+	PC7	+PC3
+  occP_1_2~ PC1 +PC2+PC4	+PC5+PC6+	PC7	+PC3
+  orgP~ PC1 +PC2+PC4	+PC5+PC6+	PC7	+PC3
+  secP_1_2~ PC1 +PC2+PC4	+PC5+PC6+	PC7	+PC3
+  sum_organic~~labP+occP_1_2+ orgP + secP_1_2
+  sum_inorganic~~labP+occP_1_2+ orgP + secP_1_2
+  sum_Phosphotransferase~~labP+occP_1_2+ orgP + secP_1_2
+  sum_Transporters~~labP+occP_1_2+ orgP + secP_1_2
+  sum_Two_component~~labP+occP_1_2+ orgP + secP_1_2
+  sum_organic~~sum_inorganic + sum_Phosphotransferase   +  sum_Transporters + sum_Two_component
+  sum_inorganic~~sum_Phosphotransferase   +  sum_Transporters + sum_Two_component
+  sum_Phosphotransferase~~sum_Transporters + sum_Two_component
+  sum_Transporters~~sum_Two_component
+  labP~~occP_1_2+orgP+secP_1_2
+  occP_1_2~~orgP+secP_1_2
+  orgP~~secP_1_2
+  PC4~PC1+PC2+PC3+PC5+PC6+PC7
+  PC1~~PC2+PC3+PC5+PC6+PC7
+  PC2~~PC3+PC5+PC6+PC7
+  PC3~~PC5+PC6+PC7
+  PC5~~PC6+PC7
+  PC6~~PC7
+  PC1~~PC1
+  PC2~~PC2
+  PC3~~PC3
+  PC4~~PC4
+  PC5~~PC5
+  PC6~~PC6
+  PC7~~PC7
+  sum~~sum
+  sum_organic            ~~sum_organic
+  sum_inorganic          ~~sum_inorganic
+  sum_Phosphotransferase ~~sum_Phosphotransferase
+  sum_Transporters       ~~sum_Transporters
+  sum_Two_component      ~~sum_Two_component 
+  labP~~labP
+  occP_1_2 ~~ occP_1_2
+  orgP ~~ orgP
+  secP_1_2 ~~ secP_1_2' 
+  fit3<-lavaan(mod,data=xxy,auto.var=TRUE)
+  summary(fit3, fit.measures=T)
+ fitMeasures(fit3,c("chisq","df","pvalue","cfi","nfi","ifi","rmsea","EVCI"))
+ semPaths(fit3, intercept = T, whatLabel = "std", residuals = FALSE, exoCov = T)
+
+ 
+##remove p<0.05
+   mod1<-'
+  sum_organic~ PC1 +PC2	+	PC5+	PC3
+  sum_inorganic~ PC1 +PC2+PC4	+PC5+PC6+	PC3	
+  sum_Phosphotransferase~ PC1 +PC2+PC4	+PC5+PC6+	PC3	
+  sum_Transporters~ PC1 +PC2    +PC5+PC3	                                       
+  sum_Two_component~ PC1 +PC2+PC5+	PC3
+  labP~ PC1 +PC2+PC4	+PC5+PC6+	PC3
+  occP_1_2~ PC1 +PC2+PC4	+PC5+PC6+	PC7	+PC3
+  orgP~ PC1 +PC2+PC4	+PC5+PC6+	PC7	+PC3
+  secP_1_2~ PC1 +PC2+PC4	+PC5+PC6+ PC3
+  sum_organic~~labP+ orgP + secP_1_2
+  sum_inorganic~~labP+occP_1_2+ orgP + secP_1_2
+  sum_Transporters~~ occP_1_2+ orgP + secP_1_2
+  sum_Two_component~~occP_1_2+ orgP + secP_1_2
+  sum_organic~~sum_inorganic + sum_Phosphotransferase   +  sum_Transporters + sum_Two_component
+  sum_inorganic~~sum_Phosphotransferase   +  sum_Transporters + sum_Two_component
+  sum_Phosphotransferase~~sum_Transporters + sum_Two_component
+  sum_Transporters~~sum_Two_component
+  labP~~occP_1_2+orgP+secP_1_2
+  occP_1_2~~orgP+secP_1_2
+  orgP~~secP_1_2
+  PC1~~PC1
+  PC2~~PC2
+  PC3~~PC3
+  PC4~~PC4
+  PC5~~PC5
+  PC6~~PC6
+  PC7~~PC7
+  sum_organic            ~~sum_organic
+  sum_inorganic          ~~sum_inorganic
+  sum_Phosphotransferase ~~sum_Phosphotransferase
+  sum_Transporters       ~~sum_Transporters
+  sum_Two_component      ~~sum_Two_component 
+    labP~~labP
+  occP_1_2 ~~ occP_1_2
+  orgP ~~ orgP
+  secP_1_2 ~~ secP_1_2' 
+  fit4<-lavaan(mod1,data=xxy,auto.var=TRUE)
+ summary(fit4, fit.measures=T)
+ fitMeasures(fit4,c("chisq","df","pvalue","cfi","nfi","ifi","rmsea","EVCI"))
+ semPaths(fit4, intercept = T, whatLabel = "std", residuals = FALSE, exoCov = T)
+
+ ##Fig.3
+ library(MASS)
+library(randomForest)
+library(caret)
+  library(pdp)
+
+ ##1.sum 
+ cols_remain3<- c("ABS_lat","cec_0.30_mean","nitrogen_0.30_mean","phh2o_0.30_mean","soc_0.30_mean","Aridity_index_2","CN30cm_1_2","SMN30cm_1_2","wc2.1_2.5m_elev_2","bdod_0_30cm_mean","cfvo_0_30cm_mean","clay_0_30cm_mean","ocd_0_30cm_mean","srad","human_sum") 
+
+xa<-read.csv('fig.2-1.csv',row.names=1)
+xb<-read.csv('fig.2-2.csv',row.names=1)
+xb<-xb[,-c(1:3)]
+xbb <- scale(xb[ ,colnames(xb) %in% cols_remain3])  
+xcNA<- na.omit(xc) 
+xaa<-xcNA
+
+ y <- xaa$sum    
+
+ set.seed(42)  
+ train2 <- createDataPartition(y, p = 0.7, list = FALSE)  
+ bag.fit <- randomForest(sum   ~ ABS_lat+cec_0.30_mean+nitrogen_0.30_mean+phh2o_0.30_mean+soc_0.30_mean+Aridity_index_2+CN30cm_1_2+SMN30cm_1_2+wc2.1_2.5m_elev_2+bdod_0_30cm_mean+cfvo_0_30cm_mean+clay_0_30cm_mean+ocd_0_30cm_mean+srad+human_sum,data=xaa,subset=train2,importance=TRUE,replace=T) 
+  partial(bag.fit, pred.var = "human_sum", plot = T)
+ 
+ # 2. sum_organic
+  cols_remain3<- c("ABS_lat","cec_0.30_mean","nitrogen_0.30_mean","phh2o_0.30_mean","soc_0.30_mean","Aridity_index_2","CN30cm_1_2","SMN30cm_1_2","wc2.1_2.5m_elev_2","bdod_0_30cm_mean","cfvo_0_30cm_mean","clay_0_30cm_mean","ocd_0_30cm_mean","srad","human_organic") 
+
+  xa<-read.csv('sum-scale.csv',row.names=1)
+  xb<-read.csv('variables.csv',row.names=1)
+  xb<-xb[,-c(1:3)]
+  xbb <- scale(xb[ ,colnames(xb) %in% cols_remain3])  
+  xc<-cbind(xa,xbb)
+  xcNA<- na.omit(xc) 
+  xaa<-xcNA
+
+ y <- xaa$sum_organic    
+
+ set.seed(42)  
+ train2 <- createDataPartition(y, p = 0.7, list = FALSE)  
+ bag.fit <- randomForest(sum_organic   ~ ABS_lat+cec_0.30_mean+nitrogen_0.30_mean+phh2o_0.30_mean+soc_0.30_mean+Aridity_index_2+CN30cm_1_2+SMN30cm_1_2+wc2.1_2.5m_elev_2+bdod_0_30cm_mean+cfvo_0_30cm_mean+clay_0_30cm_mean+ocd_0_30cm_mean+srad+human_organic,data=xaa,subset=train2,importance=TRUE,replace=T)  
+  bag.fit[["importance"]]
+  partial(bag.fit, pred.var = "human_organic", plot = T)
+
+ 
+# 3. sum_Inorganic
+  cols_remain3<- c("ABS_lat","cec_0.30_mean","nitrogen_0.30_mean","phh2o_0.30_mean","soc_0.30_mean","Aridity_index_2","CN30cm_1_2","SMN30cm_1_2","wc2.1_2.5m_elev_2","bdod_0_30cm_mean","cfvo_0_30cm_mean","clay_0_30cm_mean","ocd_0_30cm_mean","srad","human_inorganic") 
+
+xa<-read.csv('sum-scale.csv',row.names=1)
+xb<-read.csv('variables.csv',row.names=1)
+xb<-xb[,-c(1:3)]
+xbb <- scale(xb[ ,colnames(xb) %in% cols_remain3])  
+xc<-cbind(xa,xbb)
+xcNA<- na.omit(xc) 
+xaa<-xcNA
+ y <- xaa$sum_inorganic    
+ set.seed(41)  
+ train2 <- createDataPartition(y, p = 0.7, list = FALSE)  
+ bag.fit <- randomForest(sum_inorganic   ~ ABS_lat+cec_0.30_mean+nitrogen_0.30_mean+phh2o_0.30_mean+soc_0.30_mean+Aridity_index_2+CN30cm_1_2+SMN30cm_1_2+wc2.1_2.5m_elev_2+bdod_0_30cm_mean+cfvo_0_30cm_mean+clay_0_30cm_mean+ocd_0_30cm_mean+srad+human_inorganic,data=xaa,subset=train2,importance=TRUE,replace=T)  
+  bag.fit[["importance"]]
+  partial(bag.fit, pred.var = "human_inorganic", plot = T)
+
+  
+# 4. sum_Two_component
+  cols_remain3<- c("ABS_lat","cec_0.30_mean","nitrogen_0.30_mean","phh2o_0.30_mean","soc_0.30_mean","Aridity_index_2","CN30cm_1_2","SMN30cm_1_2","wc2.1_2.5m_elev_2","bdod_0_30cm_mean","cfvo_0_30cm_mean","clay_0_30cm_mean","ocd_0_30cm_mean","srad","human_two_component")
+
+xa<-read.csv('sum-scale.csv',row.names=1)
+xb<-read.csv('variables.csv',row.names=1)
+xb<-xb[,-c(1:3)]
+xbb <- scale(xb[ ,colnames(xb) %in% cols_remain3])  
+xc<-cbind(xa,xbb)
+xcNA<- na.omit(xc) 
+xaa<-xcNA
+y <- xaa$sum_Two_component    
+set.seed(42)  
+ train2 <- createDataPartition(y, p = 0.7, list = FALSE)  
+ bag.fit <- randomForest(sum_Two_component   ~ ABS_lat+cec_0.30_mean+nitrogen_0.30_mean+phh2o_0.30_mean+soc_0.30_mean+Aridity_index_2+CN30cm_1_2+SMN30cm_1_2+wc2.1_2.5m_elev_2+bdod_0_30cm_mean+cfvo_0_30cm_mean+clay_0_30cm_mean+ocd_0_30cm_mean+srad+human_two_component,data=xaa,subset=train2,importance=TRUE,replace=T)  
+  bag.fit[["importance"]]
+  partial(bag.fit, pred.var = "human_two_component", plot = T)
+
+ # 5. sum_Phosphotransferase
+  cols_remain3<- c("ABS_lat","cec_0.30_mean","nitrogen_0.30_mean","phh2o_0.30_mean","soc_0.30_mean","Aridity_index_2","CN30cm_1_2","SMN30cm_1_2","wc2.1_2.5m_elev_2","bdod_0_30cm_mean","cfvo_0_30cm_mean","clay_0_30cm_mean","ocd_0_30cm_mean","srad","human_phosphotransferase") 
+
+xa<-read.csv('sum-scale.csv',row.names=1)
+xb<-read.csv('variables.csv',row.names=1)
+xb<-xb[,-c(1:3)]
+xbb <- scale(xb[ ,colnames(xb) %in% cols_remain3])  
+xc<-cbind(xa,xbb)
+xcNA<- na.omit(xc) 
+xaa<-xcNA
+y <- xaa$sum_Phosphotransferase    
+ set.seed(42)  
+ train2 <- createDataPartition(y, p = 0.7, list = FALSE)  
+ bag.fit <- randomForest(sum_Phosphotransferase   ~ ABS_lat+cec_0.30_mean+nitrogen_0.30_mean+phh2o_0.30_mean+soc_0.30_mean+Aridity_index_2+CN30cm_1_2+SMN30cm_1_2+wc2.1_2.5m_elev_2+bdod_0_30cm_mean+cfvo_0_30cm_mean+clay_0_30cm_mean+ocd_0_30cm_mean+srad+human_phosphotransferase,data=xaa,subset=train2,importance=TRUE,replace=T)  
+  bag.fit[["importance"]]
+   partial(bag.fit, pred.var = "human_phosphotransferase", plot = T)
+ 
+# 6. sum_Transporters
+  cols_remain3<- c("ABS_lat","cec_0.30_mean","nitrogen_0.30_mean","phh2o_0.30_mean","soc_0.30_mean","Aridity_index_2","CN30cm_1_2","SMN30cm_1_2","wc2.1_2.5m_elev_2","bdod_0_30cm_mean","cfvo_0_30cm_mean","clay_0_30cm_mean","ocd_0_30cm_mean","srad","human_transporters") 
+
+xa<-read.csv('sum-scale.csv',row.names=1)
+xb<-read.csv('variables.csv',row.names=1)
+xb<-xb[,-c(1:3)]
+xbb <- scale(xb[ ,colnames(xb) %in% cols_remain3])  
+xc<-cbind(xa,xbb)
+xcNA<- na.omit(xc) 
+xaa<-xcNA
+ y <- xaa$sum_Transporters    
+ set.seed(42)  
+ train2 <- createDataPartition(y, p = 0.7, list = FALSE)  
+ bag.fit <- randomForest(sum_Transporters   ~ ABS_lat+cec_0.30_mean+nitrogen_0.30_mean+phh2o_0.30_mean+soc_0.30_mean+Aridity_index_2+CN30cm_1_2+SMN30cm_1_2+wc2.1_2.5m_elev_2+bdod_0_30cm_mean+cfvo_0_30cm_mean+clay_0_30cm_mean+ocd_0_30cm_mean+srad+human_transporters,data=xaa,subset=train2,importance=TRUE,replace=T)  
+  bag.fit[["importance"]]
+  partial(bag.fit, pred.var = "human_transporters", plot = T)
+
+ 
+  ##Fig.4
+library(MASS)
+library(randomForest)
+library(caret)
+library(rfPermute)
+library(pdp)
+xab<-read.csv('fig.4.csv',header = T,row.names = 1)
+xc_organic<-read.csv('fig.4-2.csv',header = T,row.names = 1) 
+xc_organic[is.na(xc_organic)] <- 0   
+
+xc_organic2<-cbind(xab$human_organic,xc_organic)
+xc_organic2<- na.omit(xc_organic2)
+names(xc_organic2)[1]<-"human_organic"
+ y <- xc_organic2$human_organic   
+
+set.seed(42) 
+ train2 <- createDataPartition(y, p = 0.7, list = FALSE) 
+
+ random_organic <- rfPermute(human_organic ~ .,data=xc_organic2,subset=train2,importance=TRUE,replace=T) 
+ random_organic2 <- randomForest(human_organic ~ .,data=xc_organic2,subset=train2,importance=TRUE,replace=T) 
+
+dpd_1_rf <- partial(random_organic2, pred.var="Pseudomonas",grid.resolution = 51)  
+dpd_2_rf <- partial(random_organic2, pred.var="Flavobacterium",grid.resolution = 51)    
+dpd_3_rf <- partial(random_organic2, pred.var="Cupriavidus",grid.resolution = 51)
+dpd_4_rf <- partial(random_organic2, pred.var="Rhizobium",grid.resolution = 51)
+dpd_5_rf <- partial(random_organic2, pred.var="Lysobacter",grid.resolution = 51)
+
+# inorganic  dpd_1_rf <- partial(random_Inorganic2, pred.var="Pseudomonas",grid.resolution = 51)  
+# inorganic  dpd_2_rf <- partial(random_Inorganic2, pred.var="Nocardioides",grid.resolution = 51)    
+# inorganic  dpd_3_rf <- partial(random_Inorganic2, pred.var="Lysobacter",grid.resolution = 51)
+# inorganic  dpd_4_rf <- partial(random_Inorganic2, pred.var="Sphingomonas",grid.resolution = 51)
+
+# two-comp  dpd_1_rf <- partial(random_two_component2, pred.var="Bradyrhizobium",grid.resolution = 51)  
+# two-comp  dpd_2_rf <- partial(random_two_component2, pred.var="Lysobacter",grid.resolution = 51)    
+# two-comp  dpd_3_rf <- partial(random_two_component2, pred.var="Pseudomonas",grid.resolution = 51)
+# two-comp  dpd_4_rf <- partial(random_two_component2, pred.var="Pseudoxanthomonas",grid.resolution = 51)
+# two-comp  dpd_5_rf <- partial(random_two_component2, pred.var="Rhizobium",grid.resolution = 51)
+
+dpd_1_rf <- dpd_1_rf[order(dpd_1_rf$yhat), ]
+dpd_2_rf <- dpd_2_rf[order(dpd_2_rf$yhat), ]
+dpd_3_rf <- dpd_3_rf[order(dpd_3_rf$yhat), ]
+dpd_4_rf <- dpd_4_rf[order(dpd_4_rf$yhat), ]
+dpd_5_rf <- dpd_5_rf[order(dpd_5_rf$yhat), ]  
+
+dpd_table <- as.data.frame(mapply(c, dpd_1_rf[,c(1,2)],dpd_2_rf[,c(1,2)],dpd_3_rf[,c(1,2)],dpd_4_rf[,c(1,2)],dpd_5_rf[,c(1,2)]))  
+library(reshape2)
+ dpd_table$x <- rep(seq(1,51,1),5) 
+ pca_names <- c("Pseudomonas","Flavobacterium","Cupriavidus","Rhizobium","Lysobacter")
+ ##inorganic  pca_names <- c("Pseudomonas","Nocardioides","Lysobacter","Sphingomonas")
+ ##two-comp   pca_names <- c("Bradyrhizobium","Lysobacter","Pseudomonas","Pseudoxanthomonas","Rhizobium")
+cols <- c("#E31A1C","#FFD92F","#8DA0CB","#E76AC3","#FB9A99","#FF7F00","#1F78B4")
+dpd_table$names <- rep(pca_names,each=51)
+dpd_table$names <- factor(dpd_table$names, levels = pca_names)
+  ggplot(dpd_table,aes(x=x,y=log2(Pseudomonas),color=names))+  
+geom_line(size=1.25)+theme_bw(base_size=14)+ylab("Log2-Predicted abundance")+xlab("ΩHumann Activity")+
+guides(color=guide_legend(ncol=2))+scale_color_manual(values = cols)+
+scale_x_continuous(breaks=c(min(dpd_table$x),max(dpd_table$x)),   
+labels=c("Low","High"),expand=c(0.03,0.03))+ 
+theme(legend.title=element_blank(),legend.justification=c(0,0),legend.position=c(0.1,0.7),
+legend.background = element_rect(fill=NULL,size=0.5,linetype="solid",colour ="black"),axis.title.x=element_text(size=14)) 
+ 
+ 
